@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block body %}
+    <div class="container flex-row">
+        <div class="d-flex justify-content-center">
+            <form id="login">
+                <div class="mb-3">
+                    <label for="idnumberinput" class="form-label">ID number</label>
+                    <input type="number" class="form-control" id="idnumberinput" name="id_number" aria-describedby="idnumberinput">
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="id_number" aria-describedby="username">
+                </div>
+                <div class="mb-3">
+                    <label for="passwordinput" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="passwordinput" name="password">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmation" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmation" name="confirmation">
+                </div>
+                <select name="role" id="role">
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+    </div>
+    
+{% endblock %}
