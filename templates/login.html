@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block body %}
+    <div class="container d-flex flex-custom justify-content-center">
+        <form id="login" method="POST" action="/login">
+            <div class="mb-3">
+                <label for="idnumberinput" class="form-label">ID number</label>
+                <input type="number" class="form-control" id="idnumberinput" name="id_number" aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+                <label for="passwordinput" class="form-label">Password</label>
+                <input type="password" class="form-control" id="passwordinput" name="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+    
+{% endblock %}
