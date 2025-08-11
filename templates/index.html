@@ -3,20 +3,17 @@
 {% block title %}Home{% endblock %}
 
 {% block body %}
-    <div class="container flex-column">
-        <div class="row">
-            <div class="col-sm-5">
-                <h1>Welcome to GreenGate!</h1>
-                <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('login') }}'">Login</button>
-            </div>
-            <div class="col-sm-7">
-                <p>GreenGate is the university's upgraded enrollment portal.
-                    Manage your courses with ease: browse available classes, enroll 
-                    in just a few clicks, and view your schedule all in one place. 
-                    Designed for a faster, simpler, and smarter enrollment experience.
-                </p>
-            </div> 
+    <div class=" container d-flex flex-row justify-content-center">
+        <div class="col-sm-5">
+            <h1>Welcome to GreenGate!</h1>
+            <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('login') }}'">Login</button>
         </div>
+        <div class="col-sm-7">
+            <p>GreenGate is the university's upgraded enrollment portal.
+                Manage your courses with ease: browse available classes, enroll 
+                in just a few clicks, and view your schedule all in one place. 
+                Designed for a faster, simpler, and smarter enrollment experience.
+            </p>
+        </div> 
     </div>
-    
 {% endblock %}

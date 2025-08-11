@@ -12,9 +12,13 @@ body {
   color:rgb(255, 255, 255);
 }
 
-.flex-row {
+.flex-custom {
   display: flex;
   height: 100vh;
   justify-content: center;
   align-items: center;
+}
+
+#floatingSelect {
+  margin-bottom: 1rem;
 }
