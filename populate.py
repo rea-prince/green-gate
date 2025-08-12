@@ -1,86 +1,143 @@
 import sqlite3
-from faker import Faker
-from werkzeug.security import generate_password_hash
 import random
+from datetime import datetime
+from werkzeug.security import generate_password_hash
 
-# Faker setup (Philippines locale)
-fake = Faker('en_PH')
+DB_PATH = "enrollment.db"
 
-# Connect to DB
-conn = sqlite3.connect('enrollment.db')
-cursor = conn.cursor()
+def reset_tables():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
 
-# -----------------------
-# Helper: Generate DLSU-style ID number
-# Format: YYNNNNN (Year + 5 random digits)
-# -----------------------
-def generate_dlsu_id(existing_ids):
-    while True:
-        year = str(random.randint(19, 25)).zfill(2)  # 2019-2025
-        number = str(random.randint(0, 99999)).zfill(5)
-        student_id = int(year + number)
-        if student_id not in existing_ids:
-            existing_ids.add(student_id)
-            return student_id
+    # Drop tables if exist
+    cursor.execute("DROP TABLE IF EXISTS carts")
+    cursor.execute("DROP TABLE IF EXISTS classes")
+    cursor.execute("DROP TABLE IF EXISTS users")
 
-# -----------------------
-# Populate Users
-# -----------------------
-roles = ["student", "faculty", "admin"]
-existing_ids = set()
-users_data = []
+    # Recreate tables
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('student', 'admin', 'faculty')),
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT UNIQUE
+    )
+    """)
 
-for _ in range(30):  # 30 random users
-    role = random.choices(roles, weights=[0.7, 0.2, 0.1])[0]  # mostly students
-    first_name = fake.first_name()
-    last_name = fake.last_name()
-    email = f"{first_name.lower()}.{last_name.lower()}@dlsu.edu.ph"
-    username = f"{first_name.lower()}_{last_name.lower()}"
-    password_hash = generate_password_hash("password123")
-    user_id = generate_dlsu_id(existing_ids)
-    users_data.append((user_id, username, password_hash, role, first_name, last_name, email))
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS classes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        course_code TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        section TEXT NOT NULL,
+        units INTEGER NOT NULL,
+        slots INTEGER NOT NULL,
+        days TEXT NOT NULL,
+        start_time INTEGER NOT NULL,
+        end_time INTEGER NOT NULL
+    )
+    """)
 
-cursor.executemany("""
-INSERT INTO users (id, username, password_hash, role, first_name, last_name, email)
-VALUES (?, ?, ?, ?, ?, ?, ?)
-""", users_data)
+    # After creating classes table
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name = 'classes'")
+    cursor.execute("INSERT INTO sqlite_sequence (name, seq) VALUES ('classes', 1999)")
 
-# -----------------------
-# Populate Courses
-# -----------------------
-courses = [
-    ("CCPROG1", "Computer Programming 1", "Introduction to programming concepts", 3, 40, "Mon 9-11AM"),
-    ("CCPROG2", "Computer Programming 2", "Intermediate programming concepts", 3, 40, "Tue 1-3PM"),
-    ("CCDSALG", "Data Structures & Algorithms", "In-depth study of data structures", 3, 35, "Wed 10AM-12PM"),
-    ("CCDBSYS", "Database Systems", "Relational database concepts", 3, 35, "Thu 9-11AM"),
-    ("CCNETWK", "Computer Networks", "Network fundamentals and protocols", 3, 30, "Fri 1-3PM")
-]
 
-cursor.executemany("""
-INSERT INTO courses (course_code, title, description, credits, max_students, schedule)
-VALUES (?, ?, ?, ?, ?, ?)
-""", courses)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS carts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        class_id INTEGER NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (class_id) REFERENCES classes(id)
+    )
+    """)
 
-# -----------------------
-# Populate Enrollments (only students)
-# -----------------------
-student_ids = [u[0] for u in users_data if u[3] == "student"]
-course_ids = [row[0] for row in cursor.execute("SELECT id FROM courses").fetchall()]
+    connection.commit()
+    connection.close()
 
-enrollments = []
-for student_id in student_ids:
-    num_courses = random.randint(1, 3)  # each student enrolls in 1-3 courses
-    chosen_courses = random.sample(course_ids, num_courses)
-    for course_id in chosen_courses:
-        enrollments.append((student_id, course_id, "enrolled"))
+def generate_dlsu_id(entry_year: int):
+    # entry_year is a 4-digit year, e.g. 2025
+    year_suffix = str(entry_year)[-2:]  # last two digits of the year
+    random_part = f"{random.randint(0, 99999):05d}"
+    return int(f"1{year_suffix}{random_part}")
 
-cursor.executemany("""
-INSERT INTO enrollments (student_id, course_id, status)
-VALUES (?, ?, ?)
-""", enrollments)
+def populate_users():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
 
-# Commit changes
-conn.commit()
-conn.close()
+    # Example users to add
+    users = [
+        # role, first_name, last_name, entry_year
+        ("student", "Juan", "Dela Cruz", 2025),
+        ("student", "Maria", "Santos", 2024),
+        ("faculty", "Anna", "Reyes", 0),    # No entry year needed for faculty/admin
+        ("admin", "Jose", "Rizal", 0),
+    ]
 
-print("Database populated successfully!")
+    for role, first_name, last_name, year in users:
+        if role == "student":
+            user_id = generate_dlsu_id(year)
+        else:
+            user_id = None  # Let autoincrement for non-students or generate sequential ID if preferred
+
+        username = f"{first_name.lower()}_{last_name.lower()}"
+        email = None
+        if role == "student":
+            email = f"{username}@dlsu.edu.ph"
+
+        password_hash = generate_password_hash("password123")  # default password for example
+
+        if user_id:
+            cursor.execute("""
+                INSERT INTO users (id, username, password_hash, role, first_name, last_name, email)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (user_id, username, password_hash, role, first_name, last_name, email))
+        else:
+            # For admin and faculty, let id autoincrement (pass NULL)
+            cursor.execute("""
+                INSERT INTO users (username, password_hash, role, first_name, last_name, email)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (username, password_hash, role, first_name, last_name, email))
+
+    connection.commit()
+    connection.close()
+
+def populate_classes():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+
+    classes = [
+        ("CS101", "Introduction to Computer Science", "Basics of CS", "A", 3, 40, "MWF", 800, 930),
+        ("MATH201", "Calculus I", "Differential calculus", "B", 4, 35, "TTh", 900, 1030),
+        ("PHYS150", "General Physics", "Mechanics and Thermodynamics", "A", 4, 30, "MWF", 1100, 1230),
+        ("ENG101", "English Literature", "Literature study", "C", 3, 25, "TTh", 1300, 1430),
+        ("HIST210", "World History", "History from ancient to modern times", "B", 3, 40, "MWF", 1400, 1530),
+        ("BIO110", "Biology Basics", "Intro to Biology", "A", 3, 30, "MWF", 1000, 1130),
+        ("CHEM101", "General Chemistry", "Chemistry fundamentals", "B", 4, 35, "TTh", 800, 930),
+    ]
+
+    for c in classes:
+        cursor.execute("""
+            INSERT INTO classes (course_code, title, description, section, units, slots, days, start_time, end_time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, c)
+
+    connection.commit()
+    connection.close()
+
+def main():
+    print("Resetting tables...")
+    reset_tables()
+    print("Populating users...")
+    populate_users()
+    print("Populating classes...")
+    populate_classes()
+    print("Done.")
+
+if __name__ == "__main__":
+    main()

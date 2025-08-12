@@ -12,21 +12,13 @@ body {
   color:rgb(255, 255, 255);
 }
 
-.flex-custom {
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
-}
 
-.flex-custom-c {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
-}
 
 #floatingSelect {
   margin-bottom: 1rem;
 }
+
+#course_search {
+  margin-bottom: 1rem;
+}
+

@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}Available courses{% endblock %}
+
+{% block body %}
+    <script src="{{ url_for ('static', filename='search.js') }}"></script>
+
+    <div class="container">
+        <div class="col-sm-4">
+            <!-- cart list here-->
+            <!-- only show course code, days, time and remove from cart button-->
+            <!-- include button link for full cart page-->
+
+        </div> 
+        <div class="col-sm-8">
+            <input class="form-control me-2" type="text" placeholder="Search by course code, days, or time" aria-label="Search" id="course_search" name="course_search"/>
+            <table class="table table-striped">
+                <thead>
+                    <th>Class Nbr</th>
+                    <th>Course</th>
+                    <th>Units</th>
+                    <th>Day/s</th>
+                    <th>Time</th>
+                    <th>Enrolled</th>
+                    <th>Enrl Cap</th>
+                </thead>
+                <tbody>
+                    {% for class in classes %}
+                        <tr>
+                            <td>{{ class[0] }}</td>
+                            <td>{{ class[1] }} </td>
+                            <td>{{ class[5] }} </td>
+                            <td>{{ class[8] }}</td>
+                            <td>{{ class[9] }}-{{ class[10] }}</td>
+                            <td>{{ class[6] }}</td>
+                            <td>{{ class[7] }} </td>
+                            <td>
+                                <form id="add_to_cart" method="post">
+                                    <input type="hidden" name="class_id" value="{{ class[0] }}">
+                                    <button type="button" class="btn btn-primary" name="cart">Add to cart</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
