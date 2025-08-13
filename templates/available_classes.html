@@ -5,12 +5,12 @@
 {% block body %}
     <script src="{{ url_for ('static', filename='search.js') }}"></script>
 
-    <div class="container">
+    <div class="container" style="padding-top: 10vh;">
         <div class="row">
             <div class="col-sm-4">
                 <h2 class="heading_with_button">
                     Cart
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('my_cart') }}'">View cart details</button>   
+                    <button type="button" class="btn btn-warning" onclick="window.location.href='{{ url_for('my_cart') }}'">View cart details</button>   
                 </h2>
                 <hr>
                 <table class="table table-striped">
@@ -28,7 +28,7 @@
                                 <td>
                                     <form id="remove_from_cart" method="post">
                                         <input type="hidden" name="class_id_remove" value="{{ item[5] }}">
-                                        <button type="submit" class="btn btn-secondary" name="remove">Remove</button>
+                                        <button type="submit" class="btn btn-danger" name="remove">Remove</button>
                                     </form>
                                 </td>
                             </tr>

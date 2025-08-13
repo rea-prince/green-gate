@@ -5,14 +5,10 @@ body {
 
 #greengatelogo {
   padding: 0.5rem;
-
-  text-shadow: 0px 0px 10px #000000;
-  border-radius: 30px;
+  font-size: 1.5rem;
   font-weight: bold;
   color:rgb(255, 255, 255);
 }
-
-
 
 #floatingSelect {
   margin-bottom: 1rem;
@@ -25,4 +21,10 @@ body {
 .heading_with_button {
   display: flex;
   justify-content: space-between;
+}
+
+.banner-text {
+  position: absolute;
+  top: 10vh;
+  left: 10vw;
 }

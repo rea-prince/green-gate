@@ -3,7 +3,7 @@
 {% block title %}Available courses{% endblock %}
 
 {% block body %}
-    <div class="container">
+    <div class="container" style="padding-top: 10vh;">
         <div class="row">
             <h2 class="heading_with_button">Cart<button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('available_classes') }}'">View available courses</button> </h2>
             <hr>
@@ -29,7 +29,7 @@
                             <td>
                                 <form id="remove_from_cart" method="post">
                                     <input type="hidden" name="class_id_remove" value="{{ item[11] }}">
-                                    <button type="submit" class="btn btn-secondary" name="remove">Remove</button>
+                                    <button type="submit" class="btn btn-danger" name="remove">Remove</button>
                                 </form>
                             </td>
                         </tr>
@@ -40,7 +40,7 @@
                         <td colspan="7"></td>
                         <td>
                             <form action="/enlist_classes" method="post" onsubmit="return confirm('Are you sure you want to enlist these classes?');">
-                                <button type="submit" class="btn btn-primary">Enlist classes</button>
+                                <button type="submit" class="btn btn-success">Enlist classes</button>
                             </form> 
                         </td>
                     </tr>
