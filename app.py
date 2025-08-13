@@ -147,9 +147,9 @@ def logout():
     session.clear()
     return redirect("/login")
 
-@app.route("/available_courses", methods=["GET", "POST"])
+@app.route("/available_classes", methods=["GET", "POST"])
 @login_required
-def available_courses():
+def available_classes():
     # initialize db
     connection = sqlite3.connect('enrollment.db')
     cursor = connection.cursor()
@@ -189,7 +189,7 @@ def available_courses():
             cursor.execute("DELETE FROM carts WHERE user_id = ? AND class_id = ?", (session["user_id"], remove_class_id))
 
             connection.commit()
-            return redirect("/available_courses")
+            return redirect("/available_classes")
 
         # adding to cart
         if "class_id" in request.form:
@@ -198,25 +198,25 @@ def available_courses():
             # check if cart has actual value
             if cart_class_id == None or not cart_class_id.isdigit():
                 flash("Invalid cart value")
-                return redirect("/available_courses")
+                return redirect("/available_classes")
             cart_class_id = int(cart_class_id)
 
             # check if class is full
             if not any(row[0] == int(cart_class_id) for row in classes):
                 flash("Class is full")
-                return redirect("/available_courses")
+                return redirect("/available_classes")
             
             # check for duplicates
             cart_items = cursor.execute("SELECT 1 FROM carts WHERE class_id = ? AND user_id = ?", (cart_class_id, session["user_id"])).fetchone()
             if cart_items:
                 flash("You are already enrolled in this course")
-                return redirect("/available_courses")
+                return redirect("/available_classes")
 
             # insert into cart
             cursor.execute("INSERT INTO carts (user_id, class_id) VALUES (?, ?)", (session["user_id"], cart_class_id))
 
             connection.commit()
-            return redirect("/available_courses")
+            return redirect("/available_classes")
     # rendering cart items ( course id, days, time )
     cart = cursor.execute("""
         SELECT course_code, days, start_time, end_time, units, id
@@ -232,7 +232,7 @@ def available_courses():
         
     connection.close()
 
-    return render_template("available_courses.html", classes=classes, cart=cart, total_units=total_units)
+    return render_template("available_classes.html", classes=classes, cart=cart, total_units=total_units)
 
 @app.route("/my_cart", methods=["GET", "POST"])
 @login_required
@@ -274,6 +274,42 @@ def my_cart():
     connection.close()
 
     return render_template("my_cart.html", cart_courses=cart_courses)
+
+@app.route("/enlist_classes")
+@login_required
+def enlist_classes():
+    connection = sqlite3.connect('enrollment.db')
+    cursor = connection.cursor()
+    # put cart items into enrollments
+    user_classes = cursor.execute("SELECT class_id FROM carts WHERE user_id = ?", (session["user_id"],)).fetchall()
+
+    # check if any of the classes are full
+    full_classes = []
+
+    for class_row in user_classes:
+        class_id = class_row[0]
+        enrolled_count = cursor.execute("SELECT COUNT(*) FROM enrollments WHERE class_id = ? AND status = 'enrolled'", (class_id,)).fetchone()[0]
+        total_slots = cursor.execute("SELECT slots FROM classes WHERE id = ?",(class_id,)).fetchone()[0]
+        if enrolled_count >= total_slots:
+            full_classes.append(class_id)
+    if full_classes:
+        flash(f"The following classes are full and cannot be enrolled: full_classes", "danger")
+        connection.close()
+        return redirect("/available_courses")
+
+    # enroll all classes
+    for class_row in user_classes:
+        class_id = class_row[0]
+        cursor.execute("INSERT INTO enrollments (student_id, class_id, status) VALUES (?, ?, ?)", (session["user_id"], class_id, "enrolled"))
+
+    # remove items from cart
+    cursor.execute("DELETE FROM carts WHERE user_id = ?", (session["user_id"],))
+
+    connection.commit()
+    connection.close()
+
+    return redirect("/my_courses")
+
 
 @app.route("/my_courses")
 @login_required
