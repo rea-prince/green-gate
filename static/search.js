@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // i did not know this method existed hitherto ¯\_( ͡° ͜ʖ ͡°)_/¯
         tableRows.forEach(row => {
             // index starts at 0 btw
+            const class_id = row.cells[0].textContent.toLowerCase();
             const course = row.cells[1].textContent.toLowerCase();
             const days = row.cells[3].textContent.toLowerCase();
             const time = row.cells[4].textContent.toLowerCase();
             
             // just compare table rows to search term
             if (
+                class_id.includes(searchTerm) ||
                 course.includes(searchTerm) ||
                 days.includes(searchTerm) ||
                 time.includes(searchTerm)

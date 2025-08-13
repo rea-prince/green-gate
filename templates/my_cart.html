@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Available courses{% endblock %}
+
+{% block body %}
+    <script src="{{ url_for ('static', filename='search.js') }}"></script>
+
+    <div class="container">
+        <div class="row">
+            <h2 class="heading_with_button">Your cart courses <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('available_courses') }}'">View available courses</button> </h2>
+            <hr>
+            <table class="table table-striped">
+                <thead>
+                    <th>Class Nbr</th>
+                    <th>Course</th>
+                    <th>Units</th>
+                    <th>Day/s</th>
+                    <th>Time</th>
+                    <th>Enrolled</th>
+                    <th>Enrl Cap</th>
+                </thead>
+                <tbody>
+                    {% for item in cart_courses %}
+                        <tr>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }} </td>
+                            <td>{{ item[5] }} </td>
+                            <td>{{ item[8] }}</td>
+                            <td>{{ item[9] }}-{{ item[10] }}</td>
+                            <td>{{ item[6] }}</td>
+                            <td>{{ item[7] }} </td>
+                            <td>
+                                <form id="remove_from_cart" method="post">
+                                    <input type="hidden" name="class_id_remove" value="{{ item[11] }}">
+                                    <button type="submit" class="btn btn-secondary" name="remove">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

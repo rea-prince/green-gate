@@ -22,3 +22,7 @@ body {
   margin-bottom: 1rem;
 }
 
+.heading_with_button {
+  display: flex;
+  justify-content: space-between;
+}
