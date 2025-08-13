@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // get search input
     const searchInput = document.getElementById("course_search");
     // get table
-    const tableRows = document.querySelectorAll("tbody tr");
+    const tableRows = document.querySelectorAll("#available_classes tbody tr");
 
     // search for changes to search input
     searchInput.addEventListener("keyup", function () {

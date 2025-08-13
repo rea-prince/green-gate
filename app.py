@@ -275,54 +275,88 @@ def my_cart():
 
     return render_template("my_cart.html", cart_courses=cart_courses)
 
-@app.route("/enlist_classes")
+@app.route("/enlist_classes", methods=["GET", "POST"])
 @login_required
 def enlist_classes():
     connection = sqlite3.connect('enrollment.db')
     cursor = connection.cursor()
-    # put cart items into enrollments
-    user_classes = cursor.execute("SELECT class_id FROM carts WHERE user_id = ?", (session["user_id"],)).fetchall()
+    
+    if request.method == "POST":
+        # put cart items into enrollments
+        user_classes = cursor.execute("SELECT class_id FROM carts WHERE user_id = ?", (session["user_id"],)).fetchall()
 
-    # check if any of the classes are full
-    full_classes = []
+        # check if any of the classes are full
+        full_classes = []
 
-    for class_row in user_classes:
-        class_id = class_row[0]
-        enrolled_count = cursor.execute("SELECT COUNT(*) FROM enrollments WHERE class_id = ? AND status = 'enrolled'", (class_id,)).fetchone()[0]
-        total_slots = cursor.execute("SELECT slots FROM classes WHERE id = ?",(class_id,)).fetchone()[0]
-        if enrolled_count >= total_slots:
-            full_classes.append(class_id)
-    if full_classes:
-        flash(f"The following classes are full and cannot be enrolled: full_classes", "danger")
-        connection.close()
-        return redirect("/available_courses")
+        for class_row in user_classes:
+            class_id = class_row[0]
+            enrolled_count = cursor.execute("SELECT COUNT(*) FROM enrollments WHERE class_id = ? AND status = 'enrolled'", (class_id,)).fetchone()[0]
+            total_slots = cursor.execute("SELECT slots FROM classes WHERE id = ?",(class_id,)).fetchone()[0]
+            if enrolled_count >= total_slots:
+                full_classes.append(class_id)
+        if full_classes:
+            flash(f"The following classes are full and cannot be enrolled: full_classes", "danger")
+            connection.close()
+            return redirect("/available_courses")
 
-    # enroll all classes
-    for class_row in user_classes:
-        class_id = class_row[0]
-        cursor.execute("INSERT INTO enrollments (student_id, class_id, status) VALUES (?, ?, ?)", (session["user_id"], class_id, "enrolled"))
+        # enroll all classes
+        for class_row in user_classes:
+            class_id = class_row[0]
+            cursor.execute("INSERT INTO enrollments (student_id, class_id, status) VALUES (?, ?, ?)", (session["user_id"], class_id, "enrolled"))
 
-    # remove items from cart
-    cursor.execute("DELETE FROM carts WHERE user_id = ?", (session["user_id"],))
+        # remove items from cart
+        cursor.execute("DELETE FROM carts WHERE user_id = ?", (session["user_id"],))
 
-    connection.commit()
+        connection.commit()
+
     connection.close()
 
-    return redirect("/my_courses")
+    return redirect("/my_classes")
 
 
-@app.route("/my_courses")
+@app.route("/my_classes")
 @login_required
-def my_courses():
-    return render_template("my_courses.html")
+def my_classes():
+    connection = sqlite3.connect('enrollment.db')
+    cursor = connection.cursor()
 
-@app.route("/schedule")
-@login_required
-def schedule():
-    return render_template("schedule.html")
+    user_classes = cursor.execute("""
+        SELECT c.id,
+               c.course_code,
+               c.title, 
+               c.description,
+               c.section,
+               c.units,
+               COUNT(e.id) AS enrolled_count,
+               c.slots,
+               c.days,
+               c.start_time,
+               c.end_time
+        FROM classes c
+        LEFT JOIN enrollments e
+               ON c.id = e.class_id AND e.status = 'enrolled'
+        WHERE e.student_id = ?
+        GROUP BY c.id
+        """, (session["user_id"],)).fetchall()
+
+    connection.close()
+
+    return render_template("my_classes.html", user_classes=user_classes)
 
 
-
+def parse_days(days_str):
+    """Convert a compact days string like 'MWF' or 'TTh' into a list of day names"""
+    mapping = {"M": "Mon", "T": "Tue", "W": "Wed", "Th": "Thu", "F": "Fri"}
+    result = []
+    i = 0
+    while i < len(days_str):
+        if days_str[i] == "T" and i+1 < len(days_str) and days_str[i+1] == "h":
+            result.append("Thu")
+            i += 2
+        else:
+            result.append(mapping[days_str[i]])
+            i += 1
+    return result
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col-sm-4">
                 <h2 class="heading_with_button">
-                    Your cart
+                    Cart
                     <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('my_cart') }}'">View cart details</button>   
                 </h2>
                 <hr>
@@ -43,8 +43,8 @@
             <div class="col-sm-8">
                 <h2>Available classes</h2>
                 <hr>
-                <input class="form-control me-2" type="Search" placeholder="Search by course code, days, or time" aria-label="Search" id="course_search" name="course_search"/>
-                <table class="table table-striped">
+                <input class="form-control me-2" type="text" placeholder="Search by course code, days, or time" aria-label="Search" id="course_search" name="course_search"/>
+                <table class="table table-striped" id="available_classes">
                     <thead>
                         <th>Class Nbr</th>
                         <th>Course</th>
