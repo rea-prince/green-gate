@@ -17,7 +17,7 @@ User authentication begins with the registration and login. I made use of the `w
 
 <img width="1337" height="446" alt="image" src="https://github.com/user-attachments/assets/fce18021-e608-4b28-8c00-70eab39f6813" />
 
-### Available Courses & Cart Managemen
+### Available Courses & Cart Management
 Students can view all available courses along with details like course code, title, units, days, times, and enrollment counts. Classes with full capacity are automatically filtered out from the listing.
 
 - Students can add courses to a temporary cart for enlistment.
