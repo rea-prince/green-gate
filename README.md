@@ -1,7 +1,4 @@
 # GreenGate Enlistment Portal
-
-## Overview
-
 GreenGate is a university course enlistment portal designed to simplify the process of course enlistment for students. The platform allows users to browse available classes, add courses to a cart, and enlist in courses. GreenGate was built using **Flask**, **SQLite**, and **Bootstrap**. 
 
 ## Features
